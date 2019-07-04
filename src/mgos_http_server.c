@@ -180,10 +180,14 @@ static void mgos_http_ev(struct mg_connection *c, int ev, void *p,
 #if MG_ENABLE_FILESYSTEM
       if (s_http_server_opts.document_root != NULL) {
         struct http_message *hm = (struct http_message *) p;
+		struct mg_serve_http_opts opts;
         LOG(LL_INFO, ("%p %.*s %.*s", c, (int) hm->method.len, hm->method.p,
                       (int) hm->uri.len, hm->uri.p));
-
-        mg_serve_http(c, p, s_http_server_opts);
+		if(strncmp(hm->uri.p + hm->uri.len - 3, ".gz", 3) == 0){
+            opts.extra_headers = "Content-Encoding: gzip";
+            opts.custom_mime_types = ".html.gz=text/html; charset=utf-8,.js.gz=application/javascript; charset=utf-8,.css.gz=text/css; charset=utf-8"; 			
+		}
+        mg_serve_http(c, p, opts);
         (void) hm;
       } else
 #endif
